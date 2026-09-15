@@ -1,0 +1,59 @@
+/* ============================================================
+   BENTORAH Responsive Breakpoints
+   ============================================================ */
+
+/* Mobile-first approach
+   xs: 320px (base)
+   sm: 480px
+   md: 768px
+   lg: 1024px
+   xl: 1280px
+   2xl: 1440px+
+*/
+
+/* ---- Container responsive padding ---- */
+@media (max-width: 480px) {
+  .bentorah-container {
+    padding-left: var(--space-4);
+    padding-right: var(--space-4);
+  }
+
+  .bentorah-section {
+    padding-top: var(--space-12);
+    padding-bottom: var(--space-12);
+  }
+
+  .bentorah-section--lg {
+    padding-top: var(--space-16);
+    padding-bottom: var(--space-16);
+  }
+}
+
+@media (min-width: 768px) {
+  .bentorah-container {
+    padding-left: var(--space-8);
+    padding-right: var(--space-8);
+  }
+}
+
+@media (min-width: 1280px) {
+  .bentorah-container {
+    padding-left: var(--space-12);
+    padding-right: var(--space-12);
+  }
+}
+
+/* ---- Responsive Visibility ---- */
+.hide-mobile {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .hide-mobile {
+    display: block;
+  }
+
+  .hide-desktop {
+    display: none;
+  }
+}
