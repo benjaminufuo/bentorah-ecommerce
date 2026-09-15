@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { clearCart } from '../../redux/cartSlice';
+import { selectCurrentUser } from '../../redux/authSlice';
 import { processPayment } from '../../services/paymentService';
 import { createOrder } from '../../services/orderService';
 import { formatCurrency } from '../../utils/formatters';
@@ -36,6 +37,7 @@ const Payment = () => {
   const toast = useToast();
 
   const orderData = location.state;
+  const currentUser = useSelector(selectCurrentUser);
   const [selectedMethod, setSelectedMethod] = useState('paystack');
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -73,6 +75,7 @@ const Payment = () => {
 
       // Create order
       const order = await createOrder({
+        userId: currentUser?.id || null,
         customer: {
           name: `${form.firstName} ${form.lastName}`,
           email: form.email,

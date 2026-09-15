@@ -14,9 +14,40 @@
 
 import { apiGet, apiPost, simulateDelay, USE_MOCK } from './api';
 import { generateOrderId } from '../utils/formatters';
+import { getCurrentUser } from './authService';
+
+const ORDERS_STORAGE_KEY = 'bentorah_orders';
 
 // In-memory order store (simulates backend DB for demo)
 const orderStore = new Map();
+
+/**
+ * Retrieve persistent orders from localStorage
+ * @returns {Array}
+ */
+const getStoredOrders = () => {
+  try {
+    const raw = localStorage.getItem(ORDERS_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (err) {
+    console.error('Failed to parse stored orders:', err);
+    return [];
+  }
+};
+
+/**
+ * Persist an order to localStorage
+ * @param {object} order
+ */
+const persistOrder = (order) => {
+  try {
+    const existing = getStoredOrders();
+    const updated = [order, ...existing.filter((o) => o.id !== order.id)];
+    localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(updated));
+  } catch (err) {
+    console.error('Failed to save order to localStorage:', err);
+  }
+};
 
 /**
  * Create a new order
@@ -38,10 +69,13 @@ export const createOrder = async (orderData) => {
     estimatedDelivery.getDate() + (orderData.deliveryOption === 'express' ? 2 : 5)
   );
 
+  const orderId = generateOrderId();
   const order = {
-    id: generateOrderId(),
+    id: orderId,
+    orderNumber: orderId,
     ...orderData,
     status: 'processing',
+    paymentStatus: orderData.paymentStatus || 'paid',
     createdAt: now.toISOString(),
     updatedAt: now.toISOString(),
     estimatedDelivery: estimatedDelivery.toISOString(),
@@ -56,6 +90,7 @@ export const createOrder = async (orderData) => {
   };
 
   orderStore.set(order.id, order);
+  persistOrder(order);
   return order;
 };
 
@@ -73,9 +108,17 @@ export const getOrderById = async (orderId) => {
 
   await simulateDelay(250, 500);
 
-  // Check in-memory store first (orders placed in this session)
+  // Check in-memory store first
   if (orderStore.has(orderId)) {
     return orderStore.get(orderId);
+  }
+
+  // Check persistent localStorage
+  const stored = getStoredOrders();
+  const match = stored.find((o) => o.id === orderId);
+  if (match) {
+    orderStore.set(match.id, match);
+    return match;
   }
 
   // Fall back to mock history data
@@ -89,18 +132,61 @@ export const getOrderById = async (orderId) => {
  * Get all orders for the authenticated user
  * Backend: GET /api/orders
  *
+ * @param {object} [userParam] - Optional user object to filter by
  * @returns {Promise<Array>}
  */
-export const getMyOrders = async () => {
+export const getMyOrders = async (userParam) => {
   if (!USE_MOCK) {
     return apiGet('/orders');
   }
 
   await simulateDelay(300, 600);
-  const { mockOrders } = await import('../data/orders');
-  const inMemory = Array.from(orderStore.values());
-  return [...inMemory, ...mockOrders];
+
+  const currentUser = userParam || getCurrentUser();
+  const storedOrders = getStoredOrders();
+  const memoryOrders = Array.from(orderStore.values());
+
+  // Combine and deduplicate
+  const allOrdersMap = new Map();
+  [...storedOrders, ...memoryOrders].forEach((o) => {
+    allOrdersMap.set(o.id, o);
+  });
+  const allSessionOrders = Array.from(allOrdersMap.values());
+
+  if (!currentUser) {
+    return [];
+  }
+
+  const userEmail = currentUser.email?.toLowerCase();
+  const userId = currentUser.id;
+
+  // Filter orders belonging to this user
+  const userOrders = allSessionOrders.filter((o) => {
+    const orderUserId = o.userId;
+    const orderEmail = o.customer?.email?.toLowerCase();
+    return (orderUserId && orderUserId === userId) || (orderEmail && orderEmail === userEmail);
+  });
+
+  // If user is Google demo user (Alex Johnson) and has no placed orders yet, provide the demo order
+  if (userOrders.length === 0 && (userEmail === 'alex.johnson@gmail.com' || currentUser.provider === 'google')) {
+    const { mockOrders } = await import('../data/orders');
+    const demoOrders = mockOrders.map((mo) => ({
+      ...mo,
+      userId,
+      customer: {
+        ...mo.customer,
+        name: currentUser.name || `${currentUser.firstName} ${currentUser.lastName}`.trim(),
+        email: currentUser.email,
+      },
+    }));
+    return demoOrders;
+  }
+
+  // Sort by createdAt descending
+  return userOrders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 };
+
+export const getOrders = getMyOrders;
 
 /**
  * Get all orders for a customer by email

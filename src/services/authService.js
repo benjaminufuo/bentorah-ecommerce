@@ -141,11 +141,15 @@ export const signUpWithEmail = async (email, password, extraData = {}) => {
   const namePart = cleanEmail.split('@')[0];
   const capitalized = namePart.charAt(0).toUpperCase() + namePart.slice(1);
 
+  const fullName = extraData.firstName && extraData.lastName
+    ? `${extraData.firstName.trim()} ${extraData.lastName.trim()}`
+    : extraData.name || (extraData.firstName ? extraData.firstName.trim() : capitalized);
+
   const user = {
     id: `usr_e_${Date.now()}`,
-    name: extraData.name || capitalized,
-    firstName: extraData.firstName || capitalized,
-    lastName: extraData.lastName || '',
+    name: fullName,
+    firstName: extraData.firstName ? extraData.firstName.trim() : capitalized,
+    lastName: extraData.lastName ? extraData.lastName.trim() : '',
     email: cleanEmail,
     provider: 'email',
     createdAt: new Date().toISOString(),

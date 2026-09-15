@@ -154,6 +154,19 @@
 }
 .order-success__track-btn:hover { background: var(--color-primary-hover); box-shadow: var(--shadow-primary); }
 
+.order-success__orders-btn {
+  display: inline-flex;
+  padding: var(--space-4) var(--space-8);
+  background: var(--color-surface, #ffffff);
+  border: 1.5px solid var(--color-border);
+  color: var(--color-text);
+  border-radius: var(--radius-md);
+  font-weight: var(--font-semibold);
+  text-decoration: none;
+  transition: all var(--transition-fast);
+}
+.order-success__orders-btn:hover { border-color: var(--color-text); background: var(--color-background); }
+
 .order-success__continue-btn {
   display: inline-flex;
   padding: var(--space-4) var(--space-8);

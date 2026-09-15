@@ -215,6 +215,316 @@
   background: var(--color-border-light);
 }
 
+/* Categories Dropdown */
+.bentorah-navbar__cat-wrap {
+  position: relative;
+}
+
+.bentorah-navbar__cat-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.bentorah-navbar__cat-chevron {
+  transition: transform var(--transition-fast);
+}
+
+.bentorah-navbar__cat-chevron--open {
+  transform: rotate(180deg);
+}
+
+.bentorah-navbar__cat-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  width: 240px;
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: var(--radius-lg, 12px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+  padding: var(--space-2);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 100;
+  animation: authFadeIn 0.15s ease-out;
+}
+
+.bentorah-navbar__cat-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 8px 10px;
+  border-radius: var(--radius-md, 8px);
+  text-decoration: none;
+  transition: background-color 0.15s ease;
+}
+
+.bentorah-navbar__cat-item:hover {
+  background-color: var(--color-surface-hover, #f8fafc);
+}
+
+.bentorah-navbar__cat-icon {
+  font-size: 1.15rem;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  background: #f1f5f9;
+}
+
+.bentorah-navbar__cat-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.bentorah-navbar__cat-title {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-text, #0f172a);
+}
+
+.bentorah-navbar__cat-count {
+  font-size: 0.7rem;
+  color: var(--color-muted, #94a3b8);
+}
+
+/* Authentication Button — Guest */
+.bentorah-navbar__auth-btn {
+  display: inline-flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: var(--space-2);
+  height: 38px;
+  padding: 0 14px;
+  border-radius: var(--radius-md, 8px);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text, #0f172a);
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #cbd5e1);
+  cursor: pointer;
+  white-space: nowrap !important;
+  line-height: 1;
+  transition: all var(--transition-fast);
+}
+
+.bentorah-navbar__auth-btn:hover {
+  background: var(--color-text, #0f172a);
+  color: #ffffff;
+  border-color: var(--color-text, #0f172a);
+}
+
+.bentorah-navbar__auth-mobile-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  color: var(--color-muted);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: color var(--transition-fast), background var(--transition-fast);
+}
+
+.bentorah-navbar__auth-mobile-btn:hover {
+  color: var(--color-text);
+  background: var(--color-border-light);
+}
+
+/* Account Menu Control — Logged In */
+.bentorah-navbar__account-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.bentorah-navbar__account-btn {
+  display: inline-flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  gap: 8px;
+  height: 38px;
+  padding: 0 14px 0 6px;
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #cbd5e1);
+  border-radius: var(--radius-full, 9999px);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text, #0f172a);
+  cursor: pointer;
+  white-space: nowrap !important;
+  box-sizing: border-box;
+  line-height: 1;
+  transition: all var(--transition-fast);
+}
+
+.bentorah-navbar__account-btn:hover {
+  border-color: #94a3b8;
+  background: #f8fafc;
+}
+
+.bentorah-navbar__account-mobile-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  padding: 0;
+  background: transparent;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: border-color var(--transition-fast);
+}
+
+.bentorah-navbar__account-mobile-btn:hover,
+.bentorah-navbar__account-mobile-btn:focus-visible {
+  border-color: var(--color-primary, #0f172a);
+}
+
+.bentorah-navbar__avatar-circle {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--color-primary, #0f172a);
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.bentorah-navbar__avatar-circle--mobile {
+  width: 32px;
+  height: 32px;
+  font-size: 0.8125rem;
+  box-shadow: 0 0 0 2px var(--color-border, #cbd5e1);
+}
+
+.bentorah-navbar__avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  display: block;
+}
+
+.bentorah-navbar__account-name {
+  display: inline-block;
+  max-width: 120px;
+  white-space: nowrap !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  line-height: 1;
+  color: var(--color-text, #0f172a);
+}
+
+.bentorah-navbar__chevron {
+  color: var(--color-muted, #64748b);
+  transition: transform var(--transition-fast);
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  margin-left: 2px;
+}
+
+.bentorah-navbar__chevron--open {
+  transform: rotate(180deg);
+}
+
+/* Account Dropdown */
+.bentorah-navbar__account-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 220px;
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: var(--radius-lg, 12px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+  padding: var(--space-2);
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+  animation: authFadeIn 0.15s ease-out;
+}
+
+.bentorah-navbar__dropdown-header {
+  padding: var(--space-2) var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.bentorah-navbar__dropdown-name {
+  font-size: 0.84375rem;
+  font-weight: 700;
+  color: var(--color-text, #0f172a);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bentorah-navbar__dropdown-email {
+  font-size: 0.75rem;
+  color: var(--color-muted, #64748b);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bentorah-navbar__dropdown-divider {
+  height: 1px;
+  background: var(--color-border-light, #f1f5f9);
+  margin: 4px 0;
+}
+
+.bentorah-navbar__dropdown-link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 8px 10px;
+  border-radius: var(--radius-md, 8px);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-text, #334155);
+  text-decoration: none;
+  background: transparent;
+  border: none;
+  width: 100%;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.bentorah-navbar__dropdown-link:hover {
+  background-color: var(--color-surface-hover, #f8fafc);
+  color: var(--color-text, #0f172a);
+}
+
+.bentorah-navbar__dropdown-link--signout {
+  color: #dc2626;
+}
+
+.bentorah-navbar__dropdown-link--signout:hover {
+  background-color: #fef2f2;
+  color: #b91c1c;
+}
+
 /* Responsive */
 @media (max-width: 767px) {
   .bentorah-navbar__nav {
@@ -227,5 +537,20 @@
 
   .bentorah-navbar__search-wrap {
     display: none;
+  }
+
+  .bentorah-navbar__auth-btn,
+  .bentorah-navbar__account-btn {
+    display: none !important;
+  }
+
+  .bentorah-navbar__auth-mobile-btn,
+  .bentorah-navbar__account-mobile-btn {
+    display: inline-flex !important;
+  }
+
+  .bentorah-navbar__account-dropdown {
+    right: 0;
+    max-width: calc(100vw - 24px);
   }
 }

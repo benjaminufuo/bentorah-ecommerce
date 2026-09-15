@@ -13,8 +13,10 @@ import Checkout from './pages/Checkout/Checkout';
 import Payment from './pages/Payment/Payment';
 import OrderSuccess from './pages/OrderSuccess/OrderSuccess';
 import OrderDetails from './pages/OrderDetails/OrderDetails';
+import Orders from './pages/Orders/Orders';
 import About from './pages/About/About';
 import NotFound from './pages/NotFound/NotFound';
+import ProtectedRoute from './components/auth/ProtectedRoute/ProtectedRoute';
 
 function AppLayout() {
   return (
@@ -45,7 +47,8 @@ const router = createBrowserRouter([
       { path: 'checkout', element: <Checkout /> },
       { path: 'payment', element: <Payment /> },
       { path: 'order-success', element: <OrderSuccess /> },
-      { path: 'orders/:id', element: <OrderDetails /> },
+      { path: 'orders', element: <ProtectedRoute><Orders /></ProtectedRoute> },
+      { path: 'orders/:id', element: <ProtectedRoute><OrderDetails /></ProtectedRoute> },
       { path: 'about', element: <About /> },
       { path: '*', element: <NotFound /> },
     ],

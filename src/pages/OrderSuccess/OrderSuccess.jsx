@@ -142,6 +142,9 @@ const OrderSuccess = () => {
           <Link to={`/orders/${order.id}`} className="order-success__track-btn">
             View Order Details
           </Link>
+          <Link to="/orders" className="order-success__orders-btn">
+            Order History
+          </Link>
           <Link to="/products" className="order-success__continue-btn">
             Continue Shopping
           </Link>

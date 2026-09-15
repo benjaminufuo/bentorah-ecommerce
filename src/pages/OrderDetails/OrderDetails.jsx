@@ -49,10 +49,17 @@ const OrderDetails = () => {
   return (
     <div className="order-details-page">
       <div className="bentorah-container">
+        {/* Navigation Breadcrumb / Back */}
+        <div className="order-details__back-nav">
+          <Link to="/orders" className="order-details__back-link">
+            &larr; Back to Order History
+          </Link>
+        </div>
+
         {/* Header */}
         <div className="order-details__header">
           <div>
-            <h1 className="order-details__title">Order #{order.id}</h1>
+            <h1 className="order-details__title">Order #{order.orderNumber || order.id}</h1>
             <p className="order-details__date">Placed on {formatDate(order.createdAt)}</p>
           </div>
           <div className="order-details__status" style={{ background: statusStyle.bg, color: statusStyle.text }}>
@@ -144,6 +151,7 @@ const OrderDetails = () => {
 
         {/* Actions */}
         <div className="order-details__actions">
+          <Link to="/orders" className="order-details__orders-btn">View All Orders</Link>
           <Link to="/products" className="order-details__shop-btn">Continue Shopping</Link>
         </div>
       </div>

@@ -23,6 +23,79 @@ const deliveryOptions = [
   { id: 'express', label: 'Express Delivery', duration: '1–2 business days', price: 7000 },
 ];
 
+const CheckoutField = ({
+  label,
+  id,
+  name,
+  type = 'text',
+  value,
+  onChange,
+  error,
+  required,
+  placeholder,
+  autoComplete,
+}) => (
+  <div className="checkout-field">
+    <label className="checkout-field__label" htmlFor={id}>
+      {label}
+      {required && <span aria-hidden="true"> *</span>}
+    </label>
+    <input
+      id={id}
+      name={name}
+      type={type}
+      className={`checkout-field__input ${error ? 'checkout-field__input--error' : ''}`}
+      value={value ?? ''}
+      onChange={onChange}
+      placeholder={placeholder}
+      autoComplete={autoComplete}
+      aria-invalid={Boolean(error)}
+      aria-describedby={error ? `${id}-error` : undefined}
+      required={required}
+    />
+    {error && (
+      <p className="checkout-field__error" id={`${id}-error`} role="alert">
+        {error}
+      </p>
+    )}
+  </div>
+);
+
+const OrderSummaryPanel = ({ cartItems, selectedDelivery, subtotal, deliveryFee, total }) => (
+  <aside className="checkout-summary" aria-label="Order summary">
+    <h2 className="checkout-summary__title">Order Summary</h2>
+    <ul className="checkout-summary__items">
+      {cartItems.map((item) => (
+        <li key={`${item.id}-${item.variantKey}`} className="checkout-summary__item">
+          <div className="checkout-summary__item-img-wrap">
+            <img src={item.image} alt={item.name} className="checkout-summary__item-img" loading="lazy" />
+            <span className="checkout-summary__item-qty">{item.quantity}</span>
+          </div>
+          <div className="checkout-summary__item-info">
+            <p className="checkout-summary__item-name">{item.name}</p>
+            {item.variant && <p className="checkout-summary__item-variant">{item.variant.label}</p>}
+          </div>
+          <p className="checkout-summary__item-price">{formatCurrency(item.subtotal)}</p>
+        </li>
+      ))}
+    </ul>
+    <div className="checkout-summary__totals">
+      <div className="checkout-summary__row">
+        <span>Subtotal</span>
+        <span>{formatCurrency(subtotal)}</span>
+      </div>
+      <div className="checkout-summary__row">
+        <span>Delivery ({selectedDelivery.label})</span>
+        <span>{formatCurrency(deliveryFee)}</span>
+      </div>
+      <div className="checkout-summary__row checkout-summary__row--total">
+        <span>Total</span>
+        <span>{formatCurrency(total)}</span>
+      </div>
+    </div>
+  </aside>
+);
+
 const Checkout = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -118,66 +191,7 @@ const Checkout = () => {
     return null;
   }
 
-  const OrderSummaryPanel = () => (
-    <aside className="checkout-summary" aria-label="Order summary">
-      <h2 className="checkout-summary__title">Order Summary</h2>
-      <ul className="checkout-summary__items">
-        {cartItems.map((item) => (
-          <li key={`${item.id}-${item.variantKey}`} className="checkout-summary__item">
-            <div className="checkout-summary__item-img-wrap">
-              <img src={item.image} alt={item.name} className="checkout-summary__item-img" loading="lazy" />
-              <span className="checkout-summary__item-qty">{item.quantity}</span>
-            </div>
-            <div className="checkout-summary__item-info">
-              <p className="checkout-summary__item-name">{item.name}</p>
-              {item.variant && <p className="checkout-summary__item-variant">{item.variant.label}</p>}
-            </div>
-            <p className="checkout-summary__item-price">{formatCurrency(item.subtotal)}</p>
-          </li>
-        ))}
-      </ul>
-      <div className="checkout-summary__totals">
-        <div className="checkout-summary__row">
-          <span>Subtotal</span>
-          <span>{formatCurrency(subtotal)}</span>
-        </div>
-        <div className="checkout-summary__row">
-          <span>Delivery ({selectedDelivery.label})</span>
-          <span>{formatCurrency(deliveryFee)}</span>
-        </div>
-        <div className="checkout-summary__row checkout-summary__row--total">
-          <span>Total</span>
-          <span>{formatCurrency(total)}</span>
-        </div>
-      </div>
-    </aside>
-  );
 
-  const Field = ({ label, id, name, type = 'text', required, placeholder, autoComplete }) => (
-    <div className="checkout-field">
-      <label className="checkout-field__label" htmlFor={id}>
-        {label}{required && <span aria-hidden="true"> *</span>}
-      </label>
-      <input
-        id={id}
-        name={name}
-        type={type}
-        className={`checkout-field__input ${errors[name] ? 'checkout-field__input--error' : ''}`}
-        value={form[name]}
-        onChange={handleChange}
-        placeholder={placeholder}
-        autoComplete={autoComplete}
-        aria-invalid={Boolean(errors[name])}
-        aria-describedby={errors[name] ? `${id}-error` : undefined}
-        required={required}
-      />
-      {errors[name] && (
-        <p className="checkout-field__error" id={`${id}-error`} role="alert">
-          {errors[name]}
-        </p>
-      )}
-    </div>
-  );
 
   return (
     <div className="checkout-page">
@@ -246,37 +260,49 @@ const Checkout = () => {
                 <div className="checkout-form__section">
                   <h2 className="checkout-form__heading">Contact Information</h2>
                   <div className="checkout-form__grid-2">
-                    <Field
+                    <CheckoutField
                       label="First Name"
                       id="firstName"
                       name="firstName"
+                      value={form.firstName}
+                      onChange={handleChange}
+                      error={errors.firstName}
                       required
                       placeholder="Alex"
                       autoComplete="given-name"
                     />
-                    <Field
+                    <CheckoutField
                       label="Last Name"
                       id="lastName"
                       name="lastName"
+                      value={form.lastName}
+                      onChange={handleChange}
+                      error={errors.lastName}
                       required
                       placeholder="Johnson"
                       autoComplete="family-name"
                     />
                   </div>
-                  <Field
+                  <CheckoutField
                     label="Email Address"
                     id="email"
                     name="email"
                     type="email"
+                    value={form.email}
+                    onChange={handleChange}
+                    error={errors.email}
                     required
                     placeholder="alex.johnson@example.com"
                     autoComplete="email"
                   />
-                  <Field
+                  <CheckoutField
                     label="Phone Number"
                     id="phone"
                     name="phone"
                     type="tel"
+                    value={form.phone}
+                    onChange={handleChange}
+                    error={errors.phone}
                     required
                     placeholder="0801 234 5678"
                     autoComplete="tel"
@@ -286,19 +312,25 @@ const Checkout = () => {
                 {/* Delivery Address */}
                 <div className="checkout-form__section">
                   <h2 className="checkout-form__heading">Delivery Address</h2>
-                  <Field
+                  <CheckoutField
                     label="Street Address"
                     id="address"
                     name="address"
+                    value={form.address}
+                    onChange={handleChange}
+                    error={errors.address}
                     required
                     placeholder="14 Awolowo Road, Ikoyi"
                     autoComplete="street-address"
                   />
                   <div className="checkout-form__grid-2">
-                    <Field
+                    <CheckoutField
                       label="City"
                       id="city"
                       name="city"
+                      value={form.city}
+                      onChange={handleChange}
+                      error={errors.city}
                       required
                       placeholder="Lagos"
                       autoComplete="address-level2"
@@ -446,7 +478,13 @@ const Checkout = () => {
             )}
           </div>
 
-          <OrderSummaryPanel />
+          <OrderSummaryPanel
+            cartItems={cartItems}
+            selectedDelivery={selectedDelivery}
+            subtotal={subtotal}
+            deliveryFee={deliveryFee}
+            total={total}
+          />
         </div>
       </div>
     </div>
