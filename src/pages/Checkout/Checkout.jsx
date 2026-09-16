@@ -240,9 +240,15 @@ const Checkout = () => {
                       </span>
                       <div className="checkout-auth-strip__details">
                         <span className="checkout-auth-strip__caption">Signed in for checkout</span>
-                        <span className="checkout-auth-strip__name">
-                          {currentUser.name || currentUser.email} &bull; <span className="checkout-auth-strip__email">{currentUser.email}</span>
-                        </span>
+                        <div className="checkout-auth-strip__user-meta">
+                          <span className="checkout-auth-strip__name">
+                            {currentUser.name || currentUser.email}
+                          </span>
+                          <span className="checkout-auth-strip__dot">&bull;</span>
+                          <span className="checkout-auth-strip__email" title={currentUser.email}>
+                            {currentUser.email}
+                          </span>
+                        </div>
                       </div>
                     </div>
                     <button

@@ -45,6 +45,10 @@
   padding: var(--space-4) var(--space-5);
   margin-bottom: var(--space-6);
   box-shadow: var(--shadow-sm);
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .checkout-auth-strip__info {
@@ -52,6 +56,7 @@
   align-items: center;
   gap: var(--space-3);
   min-width: 0;
+  flex: 1;
 }
 
 .checkout-auth-strip__avatar {
@@ -73,6 +78,8 @@
   flex-direction: column;
   gap: 2px;
   min-width: 0;
+  flex: 1;
+  overflow: hidden;
 }
 
 .checkout-auth-strip__caption {
@@ -81,6 +88,16 @@
   letter-spacing: 0.05em;
   font-weight: var(--font-bold);
   color: var(--color-subtle);
+  white-space: nowrap;
+}
+
+.checkout-auth-strip__user-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .checkout-auth-strip__name {
@@ -90,11 +107,25 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  flex-shrink: 1;
+  min-width: 0;
+}
+
+.checkout-auth-strip__dot {
+  color: var(--color-muted);
+  flex-shrink: 0;
+  font-size: var(--text-xs);
 }
 
 .checkout-auth-strip__email {
   color: var(--color-muted);
   font-weight: var(--font-normal);
+  font-size: var(--text-sm);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 2;
+  min-width: 0;
 }
 
 .checkout-auth-strip__switch-btn {
@@ -622,10 +653,42 @@
   }
   .checkout-auth-strip {
     flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-3);
+    padding: var(--space-3-5, 14px) var(--space-4);
+  }
+  .checkout-auth-strip__info {
+    width: 100%;
+    min-width: 0;
+  }
+  .checkout-auth-strip__user-meta {
+    flex-direction: column;
     align-items: flex-start;
+    gap: 2px;
+    width: 100%;
+  }
+  .checkout-auth-strip__dot {
+    display: none;
+  }
+  .checkout-auth-strip__name {
+    max-width: 100%;
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .checkout-auth-strip__email {
+    max-width: 100%;
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: var(--text-xs);
   }
   .checkout-auth-strip__switch-btn {
-    align-self: flex-end;
+    align-self: flex-start;
+    padding: 6px 12px;
+    font-size: 11px;
   }
   .checkout-form__actions {
     flex-direction: column-reverse;

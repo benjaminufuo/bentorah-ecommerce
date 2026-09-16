@@ -21,7 +21,7 @@ import ProtectedRoute from './components/auth/ProtectedRoute/ProtectedRoute';
 function AppLayout() {
   return (
     <div className="bentorah-page">
-      <a href="#main-content" className="skip-link">Skip to main content</a>
+      {/* <a href="#main-content" className="skip-link">Skip to main content</a> */}
       <Navbar />
       <CartDrawer />
       <main id="main-content" className="bentorah-main">
