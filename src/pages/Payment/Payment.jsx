@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { clearCart } from '../../redux/cartSlice';
 import { selectCurrentUser } from '../../redux/authSlice';
-import { processPayment } from '../../services/paymentService';
+import { initializePayment, processPayment } from '../../services/paymentService';
 import { createOrder } from '../../services/orderService';
 import { formatCurrency } from '../../utils/formatters';
 import { useToast } from '../../components/ui/Toast/ToastContext';
