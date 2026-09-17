@@ -12,11 +12,15 @@
 
 import axios from 'axios';
 
-// Environment configuration — avoids hardcoded localhost URLs
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+// Environment configuration — defaults directly to the live production API
+export const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ||
+  import.meta.env.VITE_API_URL ||
+  'https://bentorah-api.onrender.com/api/v1';
 
-// Toggle between mock simulation and real backend HTTP requests
-export const USE_MOCK = import.meta.env.VITE_USE_MOCK !== 'false';
+// Toggle between mock simulation and real backend HTTP requests.
+// Defaults to FALSE (real backend) unless explicitly set to 'true'.
+export const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true';
 
 // Token storage key
 const TOKEN_KEY = 'bentorah_token';
