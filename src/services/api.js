@@ -13,7 +13,7 @@
 import axios from 'axios';
 
 // Environment configuration — avoids hardcoded localhost URLs
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 // Toggle between mock simulation and real backend HTTP requests
 export const USE_MOCK = import.meta.env.VITE_USE_MOCK !== 'false';
