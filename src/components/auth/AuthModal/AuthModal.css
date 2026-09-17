@@ -167,6 +167,12 @@
   gap: 6px;
 }
 
+.auth-modal__label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 .auth-modal__label {
   font-size: 0.8125rem;
   font-weight: 600;
@@ -175,6 +181,47 @@
 
 .auth-modal__label span {
   color: #ef4444;
+}
+
+.auth-modal__forgot-btn {
+  background: none;
+  border: none;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-primary, #2563eb);
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.15s ease;
+}
+
+.auth-modal__forgot-btn:hover {
+  color: #1d4ed8;
+}
+
+.auth-modal__success-card {
+  text-align: center;
+  padding: var(--space-4) 0 var(--space-2);
+}
+
+.auth-modal__success-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: rgba(34, 197, 94, 0.12);
+  color: #16a34a;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--space-4);
+}
+
+.auth-modal__success-text {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary, #64748b);
+  line-height: 1.5;
+  margin-bottom: var(--space-6);
 }
 
 .auth-modal__input {

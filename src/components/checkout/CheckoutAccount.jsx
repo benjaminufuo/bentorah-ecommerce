@@ -39,22 +39,8 @@ const CheckoutAccount = ({ onAuthSuccess }) => {
     return Object.keys(errors).length === 0;
   };
 
-  const handleGoogleAuth = async () => {
-    setAuthError(null);
-    setIsGoogleLoading(true);
-    dispatch(authStart());
-
-    try {
-      const user = await signInWithGoogle();
-      dispatch(authSuccess(user));
-      if (onAuthSuccess) onAuthSuccess(user);
-    } catch (err) {
-      const msg = err.message || 'Google sign-in could not be completed. Please try again.';
-      setAuthError(msg);
-      dispatch(authFailure(msg));
-    } finally {
-      setIsGoogleLoading(false);
-    }
+  const handleGoogleAuth = () => {
+    setAuthError('Google Sign-In is coming soon! Please sign in or create an account with your email and password below.');
   };
 
   const handleSubmit = async (e) => {

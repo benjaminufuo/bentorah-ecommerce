@@ -14,6 +14,9 @@ import Payment from './pages/Payment/Payment';
 import OrderSuccess from './pages/OrderSuccess/OrderSuccess';
 import OrderDetails from './pages/OrderDetails/OrderDetails';
 import Orders from './pages/Orders/Orders';
+import PaymentCallback from './pages/PaymentCallback/PaymentCallback';
+import ResetPassword from './pages/ResetPassword/ResetPassword';
+import AuthCallback from './pages/AuthCallback/AuthCallback';
 import About from './pages/About/About';
 import NotFound from './pages/NotFound/NotFound';
 import ProtectedRoute from './components/auth/ProtectedRoute/ProtectedRoute';
@@ -46,6 +49,14 @@ const router = createBrowserRouter([
       { path: 'cart', element: <Cart /> },
       { path: 'checkout', element: <Checkout /> },
       { path: 'payment', element: <Payment /> },
+      { path: 'payment/callback', element: <PaymentCallback /> },
+      { path: 'payment-callback', element: <PaymentCallback /> },
+      { path: 'reset-password', element: <ResetPassword /> },
+      { path: 'reset-password/callback', element: <ResetPassword /> },
+      { path: 'auth/reset-password', element: <ResetPassword /> },
+      { path: 'auth/google/callback', element: <AuthCallback /> },
+      { path: 'auth/callback', element: <AuthCallback /> },
+      { path: 'google/callback', element: <AuthCallback /> },
       { path: 'order-success', element: <OrderSuccess /> },
       { path: 'orders', element: <ProtectedRoute><Orders /></ProtectedRoute> },
       { path: 'orders/:id', element: <ProtectedRoute><OrderDetails /></ProtectedRoute> },

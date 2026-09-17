@@ -65,12 +65,16 @@ apiClient.interceptors.response.use(
     if (error.response) {
       // Server responded with an error status (4xx, 5xx)
       const data = error.response.data;
-      errorMessage = data?.message || data?.error || `Request failed with status ${error.response.status}`;
+      let msg = data?.message || data?.error || `Request failed with status ${error.response.status}`;
+      if (Array.isArray(data?.errors) && data.errors.length > 0) {
+        const details = data.errors.map((e) => e.message || `${e.field}: ${e.message}`).join(', ');
+        msg = `${msg}: ${details}`;
+      }
+      errorMessage = msg;
 
       // Handle 401 Unauthorized globally (session expired)
       if (error.response.status === 401) {
         console.warn('Unauthorized request — user session may have expired.');
-        // Optionally notify auth listener / clear session
       }
     } else if (error.request) {
       // Network failure or no response from server
@@ -79,7 +83,10 @@ apiClient.interceptors.response.use(
       errorMessage = error.message;
     }
 
-    return Promise.reject(new Error(errorMessage));
+    const customError = new Error(errorMessage);
+    customError.status = error.response?.status;
+    customError.data = error.response?.data;
+    return Promise.reject(customError);
   }
 );
 
@@ -87,44 +94,49 @@ apiClient.interceptors.response.use(
  * Helper GET method
  * @param {string} endpoint
  * @param {object} params
+ * @param {object} headers
  */
-export const apiGet = (endpoint, params = {}) => {
-  return apiClient.get(endpoint, { params });
+export const apiGet = (endpoint, params = {}, headers = {}) => {
+  return apiClient.get(endpoint, { params, headers });
 };
 
 /**
  * Helper POST method
  * @param {string} endpoint
  * @param {object} data
+ * @param {object} headers
  */
-export const apiPost = (endpoint, data = {}) => {
-  return apiClient.post(endpoint, data);
+export const apiPost = (endpoint, data = {}, headers = {}) => {
+  return apiClient.post(endpoint, data, { headers });
 };
 
 /**
  * Helper PUT method
  * @param {string} endpoint
  * @param {object} data
+ * @param {object} headers
  */
-export const apiPut = (endpoint, data = {}) => {
-  return apiClient.put(endpoint, data);
+export const apiPut = (endpoint, data = {}, headers = {}) => {
+  return apiClient.put(endpoint, data, { headers });
 };
 
 /**
  * Helper PATCH method
  * @param {string} endpoint
  * @param {object} data
+ * @param {object} headers
  */
-export const apiPatch = (endpoint, data = {}) => {
-  return apiClient.patch(endpoint, data);
+export const apiPatch = (endpoint, data = {}, headers = {}) => {
+  return apiClient.patch(endpoint, data, { headers });
 };
 
 /**
  * Helper DELETE method
  * @param {string} endpoint
+ * @param {object} headers
  */
-export const apiDelete = (endpoint) => {
-  return apiClient.delete(endpoint);
+export const apiDelete = (endpoint, headers = {}) => {
+  return apiClient.delete(endpoint, { headers });
 };
 
 /**

@@ -21,15 +21,21 @@ export const GoogleIcon = () => (
   </svg>
 );
 
-const GoogleAuthButton = ({ onClick, isLoading = false, disabled = false, text = 'Continue with Google' }) => {
+const GoogleAuthButton = ({
+  onClick,
+  isLoading = false,
+  disabled = false,
+  text = 'Continue with Google',
+  badge = 'Coming Soon',
+}) => {
   return (
     <button
       type="button"
-      className="checkout-google-btn"
+      className="checkout-google-btn checkout-google-btn--coming-soon"
       onClick={onClick}
       disabled={disabled || isLoading}
       aria-busy={isLoading}
-      aria-label={text}
+      aria-label={`${text} (${badge})`}
     >
       {isLoading ? (
         <span className="checkout-google-btn__spinner" aria-hidden="true" />
@@ -39,6 +45,7 @@ const GoogleAuthButton = ({ onClick, isLoading = false, disabled = false, text =
       <span className="checkout-google-btn__text">
         {isLoading ? 'Connecting to Google…' : text}
       </span>
+      {badge && <span className="checkout-google-btn__badge">{badge}</span>}
     </button>
   );
 };
