@@ -59,16 +59,36 @@ const PaymentCallback = () => {
           dispatch(clearCart());
           setState('success');
 
+          // Check if we have a pending order saved in session
+          let pendingOrder = null;
+          try {
+            const rawPending = sessionStorage.getItem('bentorah_pending_order');
+            if (rawPending) pendingOrder = JSON.parse(rawPending);
+          } catch (e) {}
+
           // Attempt to find associated order if backend returned orderId
-          const orderId = result.details?.orderId || result.orderId;
+          const orderId =
+            result.details?.orderId ||
+            result.orderId ||
+            pendingOrder?.orderNumber ||
+            pendingOrder?._id ||
+            pendingOrder?.id;
+
           if (orderId) {
             try {
               const fetchedOrder = await getOrderById(orderId);
-              if (isMounted) setOrder(fetchedOrder);
+              if (isMounted) setOrder(fetchedOrder || pendingOrder);
             } catch (orderErr) {
               console.warn('Order lookup following payment verification:', orderErr);
+              if (isMounted && pendingOrder) setOrder(pendingOrder);
             }
+          } else if (pendingOrder && isMounted) {
+            setOrder(pendingOrder);
           }
+
+          // Clean up pending session after confirmation
+          sessionStorage.removeItem('bentorah_pending_order');
+          sessionStorage.removeItem('bentorah_pending_ref');
         } else {
           setState('failed');
           setErrorMessage(

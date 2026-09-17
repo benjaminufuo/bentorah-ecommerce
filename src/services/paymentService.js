@@ -37,7 +37,11 @@ const generateUUID = () => {
 export const initializePayment = async (data) => {
   const gateway = data.method === 'flutterwave' ? 'flutterwave' : 'paystack';
 
-  if (!USE_MOCK && data.orderId) {
+  if (!USE_MOCK) {
+    if (!data.orderId) {
+      throw new Error('Order ID is required to initialize payment.');
+    }
+
     try {
       const idempotencyKey = generateUUID();
       const res = await apiPost(
@@ -61,7 +65,12 @@ export const initializePayment = async (data) => {
         method: data.method,
       };
     } catch (err) {
-      console.warn('Backend payment initialize notice:', err);
+      console.error('Backend payment initialize error:', err);
+      throw new Error(
+        err.response?.data?.message ||
+        err.message ||
+        'Failed to initialize payment gateway with backend.'
+      );
     }
   }
 

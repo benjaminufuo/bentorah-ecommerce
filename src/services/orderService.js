@@ -253,6 +253,8 @@ export const createOrder = async (orderData) => {
       // Merge client metadata (e.g. photos, titles, payment method)
       const mapped = mapBackendOrder({
         ...serverOrder,
+        id: serverOrder.id || serverOrder._id,
+        _id: serverOrder.id || serverOrder._id,
         paymentMethod: orderData.paymentMethod,
         paymentReference: orderData.paymentReference,
         items: (serverOrder.items || []).map((si, idx) => {
@@ -273,7 +275,12 @@ export const createOrder = async (orderData) => {
       persistOrder(mapped);
       return mapped;
     } catch (err) {
-      console.warn('Backend /orders failed, falling back to local order:', err);
+      console.error('Backend /orders failed:', err);
+      throw new Error(
+        err.response?.data?.message ||
+        err.message ||
+        'Failed to create order on server. Please try again.'
+      );
     }
   }
 

@@ -53,31 +53,17 @@ const Payment = () => {
 
   const handlePay = async () => {
     setIsProcessing(true);
-    setProgress(0);
-
-    // Simulate progress
-    const interval = setInterval(() => {
-      setProgress((p) => {
-        if (p >= 80) { clearInterval(interval); return 80; }
-        return p + 20;
-      });
-    }, 400);
+    setProgress(20);
 
     try {
-      // Process payment
-      const paymentResult = await processPayment({
-        amount: total,
-        email: form.email,
-        method: selectedMethod,
-      });
-
-      setProgress(90);
-
-      // Create order
+      // 1. Create order on backend first
+      setProgress(40);
       const order = await createOrder({
         userId: currentUser?.id || null,
         customer: {
-          name: `${form.firstName} ${form.lastName}`,
+          name: `${form.firstName} ${form.lastName}`.trim(),
+          firstName: form.firstName,
+          lastName: form.lastName,
           email: form.email,
           phone: form.phone,
         },
@@ -88,7 +74,7 @@ const Payment = () => {
         },
         deliveryOption,
         items: cartItems.map((item) => ({
-          productId: item.id,
+          productId: item.id || item.productId,
           name: item.name,
           variant: item.variant?.label || null,
           quantity: item.quantity,
@@ -100,23 +86,54 @@ const Payment = () => {
         discount: 0,
         total,
         paymentMethod: selectedMethod,
-        paymentReference: paymentResult.reference,
+        paymentStatus: 'pending',
       });
 
-      setProgress(100);
-      clearInterval(interval);
+      // 2. Gateway payments (Paystack / Flutterwave)
+      if (selectedMethod === 'paystack' || selectedMethod === 'flutterwave') {
+        setProgress(75);
+        const orderId = order._id || order.id;
+        const paymentInit = await initializePayment({
+          orderId,
+          amount: total,
+          email: form.email,
+          method: selectedMethod,
+        });
 
+        if (paymentInit?.authorizationUrl) {
+          setProgress(100);
+          sessionStorage.setItem('bentorah_pending_order', JSON.stringify(order));
+          sessionStorage.setItem('bentorah_pending_ref', paymentInit.reference);
+
+          toast.success(
+            `Connecting to ${selectedMethod === 'paystack' ? 'Paystack' : 'Flutterwave'}… Redirecting now!`
+          );
+
+          // Redirect the customer to the secure gateway URL
+          setTimeout(() => {
+            window.location.href = paymentInit.authorizationUrl;
+          }, 350);
+          return;
+        }
+      }
+
+      // 3. Bank Transfer or direct offline completion
+      setProgress(100);
       dispatch(clearCart());
-      toast.success('Payment successful! Order placed.');
+      toast.success(
+        selectedMethod === 'bank-transfer'
+          ? 'Order placed! Please complete your bank transfer.'
+          : 'Order placed successfully!'
+      );
 
       setTimeout(() => {
         navigate('/order-success', { state: { order } });
       }, 600);
 
     } catch (err) {
-      clearInterval(interval);
       setProgress(0);
       setIsProcessing(false);
+      console.error('Payment flow error:', err);
       toast.error(err.message || 'Payment failed. Please try again.');
     }
   };
@@ -160,31 +177,24 @@ const Payment = () => {
               </div>
             </div>
 
-            {/* Mock card entry (visual only) */}
+            {/* Gateway Information Card */}
             {(selectedMethod === 'paystack' || selectedMethod === 'flutterwave') && (
-              <div className="payment-card-preview">
-                <h2 className="payment-section-heading">Payment Details</h2>
-                <div className="payment-card-preview__note">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-                  </svg>
-                  In production, you will be redirected to the <strong>{selectedMethod === 'paystack' ? 'Paystack' : 'Flutterwave'}</strong> secure payment page. This is a demo — click Pay to simulate.
+              <div className="payment-gateway-card">
+                <div className="payment-gateway-card__badge">
+                  <span className="payment-gateway-card__pulse"></span>
+                  Live Gateway
                 </div>
-                <div className="payment-mock-card">
-                  <div className="payment-mock-card__field">
-                    <label>Card Number</label>
-                    <div className="payment-mock-card__input">**** **** **** 4242</div>
-                  </div>
-                  <div className="payment-mock-card__row">
-                    <div className="payment-mock-card__field">
-                      <label>Expiry</label>
-                      <div className="payment-mock-card__input">12/28</div>
-                    </div>
-                    <div className="payment-mock-card__field">
-                      <label>CVV</label>
-                      <div className="payment-mock-card__input">***</div>
-                    </div>
-                  </div>
+                <h3 className="payment-gateway-card__title">
+                  {selectedMethod === 'paystack' ? 'Paystack Checkout' : 'Flutterwave Checkout'}
+                </h3>
+                <p className="payment-gateway-card__desc">
+                  You will be securely redirected to {selectedMethod === 'paystack' ? 'Paystack' : 'Flutterwave'} to complete your transaction with Card, Bank Transfer, USSD, or Mobile Money.
+                </p>
+                <div className="payment-gateway-card__channels">
+                  <span className="payment-gateway-chip">💳 Debit / Credit Card</span>
+                  <span className="payment-gateway-chip">🏦 Bank Transfer</span>
+                  <span className="payment-gateway-chip">📱 USSD</span>
+                  <span className="payment-gateway-chip">🔒 256-Bit Encryption</span>
                 </div>
               </div>
             )}
@@ -209,7 +219,11 @@ const Payment = () => {
                   <div className="payment-progress__fill" style={{ width: `${progress}%` }}></div>
                 </div>
                 <p className="payment-progress__text">
-                  {progress < 50 ? 'Initializing payment…' : progress < 90 ? 'Verifying transaction…' : 'Placing your order…'}
+                  {progress < 40
+                    ? 'Creating order on server…'
+                    : progress < 80
+                    ? `Initializing ${selectedMethod === 'paystack' ? 'Paystack' : selectedMethod === 'flutterwave' ? 'Flutterwave' : 'payment'}…`
+                    : 'Redirecting to payment gateway…'}
                 </p>
               </div>
             )}
@@ -224,14 +238,22 @@ const Payment = () => {
               {isProcessing ? (
                 <>
                   <span className="payment-pay-btn__spinner" aria-hidden="true"></span>
-                  Processing…
+                  {selectedMethod === 'paystack'
+                    ? 'Connecting to Paystack…'
+                    : selectedMethod === 'flutterwave'
+                    ? 'Connecting to Flutterwave…'
+                    : 'Processing…'}
                 </>
               ) : (
                 <>
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>
                   </svg>
-                  Pay {formatCurrency(total)}
+                  {selectedMethod === 'paystack'
+                    ? `Pay ${formatCurrency(total)} with Paystack →`
+                    : selectedMethod === 'flutterwave'
+                    ? `Pay ${formatCurrency(total)} with Flutterwave →`
+                    : `Confirm Order (${formatCurrency(total)})`}
                 </>
               )}
             </button>

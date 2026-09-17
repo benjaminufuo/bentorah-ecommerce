@@ -31,30 +31,66 @@
 .payment-method__name { font-size: var(--text-sm); font-weight: var(--font-semibold); color: var(--color-text); }
 .payment-method__desc { font-size: var(--text-xs); color: var(--color-subtle); margin-top: 2px; }
 
-/* Mock card */
-.payment-card-preview { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-xl); padding: var(--space-6); margin-bottom: var(--space-6); }
-
-.payment-card-preview__note {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-3);
-  background: #EFF6FF;
-  border: 1px solid #BFDBFE;
-  border-radius: var(--radius-md);
-  padding: var(--space-4);
-  font-size: var(--text-sm);
-  color: #1E40AF;
-  margin-bottom: var(--space-5);
-  line-height: var(--leading-relaxed);
+/* Gateway card */
+.payment-gateway-card {
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-primary-light, #bfdbfe);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  margin-bottom: var(--space-6);
+  background: linear-gradient(180deg, var(--color-surface) 0%, rgba(37, 99, 235, 0.03) 100%);
 }
-.payment-card-preview__note svg { flex-shrink: 0; margin-top: 2px; }
 
-.payment-mock-card { background: var(--color-background); border-radius: var(--radius-lg); padding: var(--space-5); border: 1px solid var(--color-border-light); }
-.payment-mock-card__field { display: flex; flex-direction: column; gap: var(--space-2); margin-bottom: var(--space-4); }
-.payment-mock-card__field:last-child { margin-bottom: 0; }
-.payment-mock-card__field label { font-size: var(--text-xs); font-weight: var(--font-semibold); color: var(--color-subtle); text-transform: uppercase; letter-spacing: var(--tracking-wide); }
-.payment-mock-card__input { padding: var(--space-3) var(--space-4); border: 1.5px solid var(--color-border); border-radius: var(--radius-md); font-size: var(--text-sm); color: var(--color-subtle); background: var(--color-surface); font-family: monospace; }
-.payment-mock-card__row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
+.payment-gateway-card__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 4px 10px;
+  background: #EFF6FF;
+  color: #1D4ED8;
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  border-radius: var(--radius-full);
+  margin-bottom: var(--space-3);
+}
+
+.payment-gateway-card__pulse {
+  width: 7px;
+  height: 7px;
+  background: #2563EB;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+.payment-gateway-card__title {
+  font-size: var(--text-base);
+  font-weight: var(--font-bold);
+  color: var(--color-text);
+  margin-bottom: var(--space-2);
+}
+
+.payment-gateway-card__desc {
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+  line-height: var(--leading-relaxed);
+  margin-bottom: var(--space-4);
+}
+
+.payment-gateway-card__channels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.payment-gateway-chip {
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  padding: 6px 12px;
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+}
 
 /* Bank transfer */
 .payment-bank-details { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-xl); padding: var(--space-6); margin-bottom: var(--space-6); }
