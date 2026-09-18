@@ -372,8 +372,9 @@
 
 .auth-modal__code-row {
   display: flex;
-  gap: var(--space-2, 8px);
+  gap: 12px;
   align-items: center;
+  width: 100%;
 }
 
 .auth-modal__input--code {
@@ -381,7 +382,8 @@
   font-weight: 700;
   font-size: 1.05rem;
   text-align: center;
-  max-width: 140px;
+  width: 140px;
+  flex: 0 0 140px;
 }
 
 .auth-modal__send-code-btn {
