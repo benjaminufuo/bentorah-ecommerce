@@ -26,16 +26,16 @@ const GoogleAuthButton = ({
   isLoading = false,
   disabled = false,
   text = 'Continue with Google',
-  badge = 'Coming Soon',
+  badge = null,
 }) => {
   return (
     <button
       type="button"
-      className="checkout-google-btn checkout-google-btn--coming-soon"
+      className={`checkout-google-btn ${badge ? 'checkout-google-btn--coming-soon' : ''}`}
       onClick={onClick}
       disabled={disabled || isLoading}
       aria-busy={isLoading}
-      aria-label={`${text} (${badge})`}
+      aria-label={text}
     >
       {isLoading ? (
         <span className="checkout-google-btn__spinner" aria-hidden="true" />

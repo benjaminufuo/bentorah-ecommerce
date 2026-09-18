@@ -554,3 +554,11 @@
     max-width: calc(100vw - 24px);
   }
 }
+
+.bentorah-navbar__cat-icon-img {
+  width: 1.25rem;
+  height: 1.25rem;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+

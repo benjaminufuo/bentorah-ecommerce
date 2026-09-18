@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { authStart, authSuccess, authFailure } from '../../redux/authSlice';
-import { fetchCurrentUser } from '../../services/authService';
+import { fetchCurrentUser, exchangeGoogleCode } from '../../services/authService';
 import { useToast } from '../../components/ui/Toast/ToastContext';
 import './AuthCallback.css';
 
@@ -30,7 +30,8 @@ const AuthCallback = () => {
   const [state, setState] = useState('processing'); // 'processing' | 'success' | 'failed'
   const [errorMessage, setErrorMessage] = useState('');
 
-  // Extract token or error from query parameters
+  // Extract exchange code, token, or error from query parameters
+  const code = searchParams.get('code');
   const token =
     searchParams.get('token') ||
     searchParams.get('jwt') ||
@@ -49,9 +50,9 @@ const AuthCallback = () => {
       return;
     }
 
-    if (!token) {
+    if (!code && !token) {
       setState('failed');
-      setErrorMessage('No authentication token received from Google callback.');
+      setErrorMessage('No authentication code or token received from Google callback.');
       return;
     }
 
@@ -61,11 +62,16 @@ const AuthCallback = () => {
       dispatch(authStart());
 
       try {
-        // 1. Store the received JWT token
-        localStorage.setItem('bentorah_token', token);
+        let user;
 
-        // 2. Fetch the fresh user profile from GET /auth/me
-        const user = await fetchCurrentUser();
+        if (code) {
+          // Exchange one-time Google authorization code for JWT token & user profile
+          user = await exchangeGoogleCode(code);
+        } else if (token) {
+          // Store the directly received JWT token and fetch profile
+          localStorage.setItem('bentorah_token', token);
+          user = await fetchCurrentUser();
+        }
 
         if (!isMounted) return;
 

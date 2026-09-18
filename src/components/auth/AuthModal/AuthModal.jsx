@@ -5,8 +5,10 @@ import {
   signInWithGoogle,
   signInWithEmail,
   signUpWithEmail,
+  sendVerificationCode,
   requestPasswordReset,
 } from '../../../services/authService';
+import { API_BASE_URL } from '../../../services/api';
 import GoogleAuthButton from '../../checkout/GoogleAuthButton';
 import { useToast } from '../../ui/Toast/ToastContext';
 import './AuthModal.css';
@@ -27,8 +29,13 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
     lastName: '',
     email: '',
     password: '',
+    confirmPassword: '',
+    verificationCode: '',
   });
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [countdown, setCountdown] = useState(0);
+  const [isSendingCode, setIsSendingCode] = useState(false);
   const [errors, setErrors] = useState({});
   const [authError, setAuthError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -45,10 +52,31 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
       setErrors({});
       setAuthError(null);
       setForgotSuccess(false);
-      setFormData({ firstName: '', lastName: '', email: '', password: '' });
+      setFormData({
+        firstName: '',
+        lastName: '',
+        email: '',
+        password: '',
+        confirmPassword: '',
+        verificationCode: '',
+      });
       setShowPassword(false);
+      setShowConfirmPassword(false);
+      setCountdown(0);
+      setIsSendingCode(false);
     }
   }, [isOpen, initialMode]);
+
+  // 60-second countdown timer for verification code resend
+  useEffect(() => {
+    let timer;
+    if (countdown > 0) {
+      timer = setInterval(() => {
+        setCountdown((c) => (c > 0 ? c - 1 : 0));
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [countdown]);
 
   // Lock body scroll and focus first input
   useEffect(() => {
@@ -92,6 +120,33 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
     }
   };
 
+  const handleSendVerificationCode = async () => {
+    if (countdown > 0 || isSendingCode) return;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const cleanEmail = formData.email?.trim();
+
+    if (!cleanEmail) {
+      setErrors((prev) => ({ ...prev, email: 'Please enter your email to receive a verification code.' }));
+      return;
+    }
+    if (!emailRegex.test(cleanEmail)) {
+      setErrors((prev) => ({ ...prev, email: 'Please enter a valid email address.' }));
+      return;
+    }
+
+    setIsSendingCode(true);
+    setAuthError(null);
+    try {
+      const res = await sendVerificationCode(cleanEmail);
+      setCountdown(60);
+      toast.success(res.message || '6-digit verification code sent to your email!');
+    } catch (err) {
+      setAuthError(err.message || 'Failed to send verification code. Please try again.');
+    } finally {
+      setIsSendingCode(false);
+    }
+  };
+
   const validate = () => {
     const newErrors = {};
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -117,6 +172,21 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
       } else if (mode === 'signup' && formData.password.length < 6) {
         newErrors.password = 'Password must be at least 6 characters long.';
       }
+
+      if (mode === 'signup') {
+        if (!formData.confirmPassword) {
+          newErrors.confirmPassword = 'Please confirm your password.';
+        } else if (formData.password !== formData.confirmPassword) {
+          newErrors.confirmPassword = 'Passwords do not match.';
+        }
+
+        const cleanCode = (formData.verificationCode || '').trim();
+        if (!cleanCode) {
+          newErrors.verificationCode = 'Please enter the 6-digit code sent to your email.';
+        } else if (!/^\d{6}$/.test(cleanCode)) {
+          newErrors.verificationCode = 'Verification code must be exactly 6 digits.';
+        }
+      }
     }
 
     setErrors(newErrors);
@@ -124,8 +194,8 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
   };
 
   const handleGoogleSignIn = () => {
-    toast.info('Google Sign-In is coming soon! Please sign in or register with your email address.');
-    setAuthError('Google Sign-In is coming soon. Please use email and password to sign in or create an account.');
+    setIsGoogleLoading(true);
+    window.location.href = `${API_BASE_URL}/auth/google`;
   };
 
   const handleSubmit = async (e) => {
@@ -157,7 +227,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
         user = await signUpWithEmail(formData.email, formData.password, {
           firstName: formData.firstName,
           lastName: formData.lastName,
-          name: `${formData.firstName.trim()} ${formData.lastName.trim()}`,
+          verificationCode: formData.verificationCode.trim(),
         });
         toast.success(`Account created! Welcome to Bentorah, ${user.firstName || user.name}!`);
       } else {
@@ -409,6 +479,108 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
                     </p>
                   )}
                 </div>
+              )}
+
+              {mode === 'signup' && (
+                <>
+                  {/* Confirm Password Field */}
+                  <div className="auth-modal__field">
+                    <label className="auth-modal__label" htmlFor="modal-confirmPassword">
+                      Confirm Password <span aria-hidden="true">*</span>
+                    </label>
+                    <div className="auth-modal__password-wrap">
+                      <input
+                        id="modal-confirmPassword"
+                        name="confirmPassword"
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        className={`auth-modal__input ${errors.confirmPassword ? 'auth-modal__input--error' : ''}`}
+                        placeholder="Re-enter your password"
+                        value={formData.confirmPassword}
+                        onChange={handleChange}
+                        disabled={isSubmitting || isGoogleLoading}
+                        autoComplete="new-password"
+                        aria-invalid={Boolean(errors.confirmPassword)}
+                        aria-describedby={errors.confirmPassword ? 'modal-cpwd-err' : undefined}
+                      />
+                      <button
+                        type="button"
+                        className="auth-modal__toggle-pwd"
+                        onClick={() => setShowConfirmPassword((prev) => !prev)}
+                        aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                        tabIndex={-1}
+                      >
+                        {showConfirmPassword ? (
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                            <line x1="1" y1="1" x2="23" y2="23" />
+                          </svg>
+                        ) : (
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                            <circle cx="12" cy="12" r="3" />
+                          </svg>
+                        )}
+                      </button>
+                    </div>
+                    {errors.confirmPassword && (
+                      <p id="modal-cpwd-err" className="auth-modal__field-error" role="alert">
+                        {errors.confirmPassword}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* 6-digit Verification Code Field */}
+                  <div className="auth-modal__field">
+                    <div className="auth-modal__label-row">
+                      <label className="auth-modal__label" htmlFor="modal-verificationCode">
+                        Email Verification Code <span aria-hidden="true">*</span>
+                      </label>
+                      <span className="auth-modal__hint">6 digits</span>
+                    </div>
+                    <div className="auth-modal__code-row">
+                      <input
+                        id="modal-verificationCode"
+                        name="verificationCode"
+                        type="text"
+                        maxLength={6}
+                        pattern="[0-9]*"
+                        inputMode="numeric"
+                        className={`auth-modal__input auth-modal__input--code ${errors.verificationCode ? 'auth-modal__input--error' : ''}`}
+                        placeholder="123456"
+                        value={formData.verificationCode}
+                        onChange={(e) => {
+                          const val = e.target.value.replace(/\D/g, '').slice(0, 6);
+                          setFormData((prev) => ({ ...prev, verificationCode: val }));
+                          if (errors.verificationCode) setErrors((prev) => ({ ...prev, verificationCode: null }));
+                        }}
+                        disabled={isSubmitting || isGoogleLoading}
+                        autoComplete="one-time-code"
+                        aria-invalid={Boolean(errors.verificationCode)}
+                        aria-describedby={errors.verificationCode ? 'modal-code-err' : undefined}
+                      />
+                      <button
+                        type="button"
+                        className={`auth-modal__send-code-btn ${countdown > 0 ? 'auth-modal__send-code-btn--disabled' : ''}`}
+                        onClick={handleSendVerificationCode}
+                        disabled={countdown > 0 || isSendingCode || isSubmitting}
+                        aria-label={countdown > 0 ? `Resend code in ${countdown} seconds` : 'Send verification code'}
+                      >
+                        {isSendingCode ? (
+                          <span className="auth-modal__code-spinner" aria-hidden="true" />
+                        ) : countdown > 0 ? (
+                          <span>Resend in {countdown}s</span>
+                        ) : (
+                          <span>Send Code</span>
+                        )}
+                      </button>
+                    </div>
+                    {errors.verificationCode && (
+                      <p id="modal-code-err" className="auth-modal__field-error" role="alert">
+                        {errors.verificationCode}
+                      </p>
+                    )}
+                  </div>
+                </>
               )}
 
               <button

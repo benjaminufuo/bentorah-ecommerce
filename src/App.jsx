@@ -57,6 +57,7 @@ const router = createBrowserRouter([
       { path: 'auth/google/callback', element: <AuthCallback /> },
       { path: 'auth/callback', element: <AuthCallback /> },
       { path: 'google/callback', element: <AuthCallback /> },
+      { path: 'oauth-callback', element: <AuthCallback /> },
       { path: 'order-success', element: <OrderSuccess /> },
       { path: 'orders', element: <ProtectedRoute><Orders /></ProtectedRoute> },
       { path: 'orders/:id', element: <ProtectedRoute><OrderDetails /></ProtectedRoute> },

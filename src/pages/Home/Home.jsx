@@ -199,13 +199,38 @@ const Home = () => {
               <Link to="/products" className="home-section-link">View all &rarr;</Link>
             </div>
             <div className="home-categories__grid">
-              {categories.map((cat) => (
-                <Link key={cat.id} to={`/products?category=${cat.id}`} className="home-category-card">
-                  <span className="home-category-card__emoji" aria-hidden="true">{cat.icon}</span>
-                  <span className="home-category-card__label">{cat.label}</span>
-                  <span className="home-category-card__count">{cat.count} products</span>
-                </Link>
-              ))}
+              {categories.map((cat) => {
+                const isUrlIcon =
+                  typeof cat.icon === 'string' &&
+                  (cat.icon.startsWith('http') || cat.icon.startsWith('/') || cat.icon.includes('.svg'));
+
+                return (
+                  <Link key={cat.id} to={`/products?category=${cat.id}`} className="home-category-card">
+                    {isUrlIcon ? (
+                      <span className="home-category-card__icon-wrap" aria-hidden="true">
+                        <img
+                          src={cat.icon}
+                          alt=""
+                          className="home-category-card__icon-img"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                            if (e.currentTarget.nextSibling) {
+                              e.currentTarget.nextSibling.style.display = 'inline';
+                            }
+                          }}
+                        />
+                        <span className="home-category-card__emoji home-category-card__emoji--fallback" style={{ display: 'none' }}>
+                          🛍️
+                        </span>
+                      </span>
+                    ) : (
+                      <span className="home-category-card__emoji" aria-hidden="true">{cat.icon || '🛍️'}</span>
+                    )}
+                    <span className="home-category-card__label">{cat.label}</span>
+                    <span className="home-category-card__count">{cat.count} products</span>
+                  </Link>
+                );
+              })}
             </div>
           </div>
         </div>

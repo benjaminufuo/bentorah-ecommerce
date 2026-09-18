@@ -32,11 +32,13 @@ const PaymentCallback = () => {
   const [verifiedData, setVerifiedData] = useState(null);
   const [order, setOrder] = useState(null);
 
-  // Extract reference from possible gateway query parameter variants
+  // Extract reference from possible gateway query parameter variants (Paystack & Flutterwave)
   const reference =
     searchParams.get('reference') ||
     searchParams.get('trxref') ||
-    searchParams.get('tx_ref');
+    searchParams.get('tx_ref') ||
+    searchParams.get('transaction_id') ||
+    searchParams.get('flw_ref');
 
   useEffect(() => {
     document.title = 'Verifying Payment — BENTORAH';

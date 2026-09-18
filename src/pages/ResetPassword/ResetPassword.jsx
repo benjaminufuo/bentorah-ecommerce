@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
-import { resetPassword } from '../../services/authService';
+import { resetPassword, validateResetToken } from '../../services/authService';
 import { useToast } from '../../components/ui/Toast/ToastContext';
 import './ResetPassword.css';
 
@@ -8,7 +8,7 @@ const EyeIcon = ({ visible }) => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     {visible ? (
       <>
-        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8z" />
         <circle cx="12" cy="12" r="3" />
       </>
     ) : (
@@ -39,15 +39,41 @@ const ResetPassword = () => {
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isValidatingToken, setIsValidatingToken] = useState(Boolean(token));
+  const [isTokenInvalid, setIsTokenInvalid] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    if (token) {
+      validateResetToken(token)
+        .then((res) => {
+          if (!isMounted) return;
+          setIsValidatingToken(false);
+          if (!res?.valid) {
+            setIsTokenInvalid(true);
+            setErrorMessage('This password reset link is invalid or has expired. Please request a new one.');
+          }
+        })
+        .catch(() => {
+          if (!isMounted) return;
+          setIsValidatingToken(false);
+        });
+    } else {
+      setIsValidatingToken(false);
+    }
+    return () => {
+      isMounted = false;
+    };
+  }, [token]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage('');
 
-    if (!token) {
-      setErrorMessage('Reset token is missing or invalid. Please check your email link.');
+    if (!token || isTokenInvalid) {
+      setErrorMessage('Reset token is missing or invalid. Please check your email link or request a new one.');
       return;
     }
 

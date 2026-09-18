@@ -233,7 +233,29 @@ const Navbar = () => {
                             role="menuitem"
                             onClick={() => setCategoriesOpen(false)}
                           >
-                            <span className="bentorah-navbar__cat-icon">{cat.icon}</span>
+                            {typeof cat.icon === 'string' && (cat.icon.startsWith('http') || cat.icon.startsWith('/') || cat.icon.includes('.svg')) ? (
+                              <img
+                                src={cat.icon}
+                                alt=""
+                                className="bentorah-navbar__cat-icon-img"
+                                onError={(e) => {
+                                  e.currentTarget.style.display = 'none';
+                                  if (e.currentTarget.nextSibling) e.currentTarget.nextSibling.style.display = 'inline-flex';
+                                }}
+                              />
+                            ) : null}
+                            <span
+                              className="bentorah-navbar__cat-icon"
+                              style={{
+                                display:
+                                  typeof cat.icon === 'string' &&
+                                  (cat.icon.startsWith('http') || cat.icon.startsWith('/') || cat.icon.includes('.svg'))
+                                    ? 'none'
+                                    : 'inline-flex',
+                              }}
+                            >
+                              {cat.icon || '🛍️'}
+                            </span>
                             <div className="bentorah-navbar__cat-text">
                               <span className="bentorah-navbar__cat-title">{cat.label}</span>
                               <span className="bentorah-navbar__cat-count">{cat.count} products</span>

@@ -363,6 +363,67 @@
   color: #3b82f6;
 }
 
+/* Verification Code Field Styles */
+.auth-modal__hint {
+  font-size: 0.75rem;
+  color: var(--color-muted, #94a3b8);
+  font-weight: 500;
+}
+
+.auth-modal__code-row {
+  display: flex;
+  gap: var(--space-2, 8px);
+  align-items: center;
+}
+
+.auth-modal__input--code {
+  letter-spacing: 0.18em;
+  font-weight: 700;
+  font-size: 1.05rem;
+  text-align: center;
+  max-width: 140px;
+}
+
+.auth-modal__send-code-btn {
+  flex: 1;
+  height: 42px;
+  padding: 0 var(--space-3, 12px);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-primary, #0f172a);
+  background: var(--color-surface-subtle, #f1f5f9);
+  border: 1px solid var(--color-border, #cbd5e1);
+  border-radius: var(--radius-md, 8px);
+  cursor: pointer;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.auth-modal__send-code-btn:hover:not(:disabled) {
+  background: #e2e8f0;
+  border-color: #94a3b8;
+}
+
+.auth-modal__send-code-btn:disabled,
+.auth-modal__send-code-btn--disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  background: #f8fafc;
+  color: #94a3b8;
+}
+
+.auth-modal__code-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(15, 23, 42, 0.2);
+  border-top-color: var(--color-primary, #0f172a);
+  border-radius: 50%;
+  animation: authSpin 0.7s linear infinite;
+}
+
 /* Mobile responsive bottom-sheet behavior */
 @media (max-width: 480px) {
   .auth-modal-overlay {
@@ -381,5 +442,13 @@
   .auth-modal__grid-row {
     grid-template-columns: 1fr;
     gap: var(--space-4);
+  }
+
+  .auth-modal__code-row {
+    flex-direction: row;
+  }
+
+  .auth-modal__input--code {
+    max-width: 120px;
   }
 }

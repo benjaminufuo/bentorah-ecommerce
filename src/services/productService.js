@@ -119,12 +119,13 @@ export const mapBackendCategory = (c) => {
     'smart-home': '🏠',
   };
   const slug = c.slug || c.id || '';
+  const normalizedSlug = (c.slug || c.name || '').toLowerCase().replace(/\s+/g, '-');
   return {
     id: slug,
     slug: slug,
     label: c.name || c.label || slug,
     name: c.name || c.label || slug,
-    icon: iconMap[slug] || c.icon || '🛍️',
+    icon: iconMap[slug] || iconMap[normalizedSlug] || c.icon || '🛍️',
     count: c.productCount ?? c.count ?? 0,
   };
 };

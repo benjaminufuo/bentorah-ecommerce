@@ -143,12 +143,49 @@ export const signInWithGoogle = async (idToken) => {
 };
 
 /**
- * Sign up with Email and Password
+ * Send 6-digit email verification code before registration
+ * Backend: POST /auth/send-verification-code
+ *
+ * @param {string} email
+ * @returns {Promise<{ success: boolean, message: string }>}
+ */
+export const sendVerificationCode = async (email) => {
+  const cleanEmail = email?.trim().toLowerCase();
+  if (!cleanEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+    throw new Error('Please enter a valid email address.');
+  }
+
+  if (!USE_MOCK) {
+    try {
+      const res = await apiPost('/auth/send-verification-code', { email: cleanEmail });
+      return {
+        success: true,
+        message: res?.message || 'A 6-digit verification code has been sent to your email.',
+      };
+    } catch (err) {
+      console.error('Send verification code API error:', err);
+      throw new Error(
+        err.response?.data?.message ||
+        err.message ||
+        'Failed to send verification code. Please try again.'
+      );
+    }
+  }
+
+  await simulateDelay(300, 600);
+  return {
+    success: true,
+    message: 'A 6-digit verification code has been sent to your email.',
+  };
+};
+
+/**
+ * Sign up with Email, Password, Names and 6-digit Verification Code
  * Backend: POST /auth/register
  *
  * @param {string} email
  * @param {string} password
- * @param {object} [extraData] - Optional first/last name
+ * @param {object} [extraData] - { firstName, lastName, verificationCode }
  * @returns {Promise<object>} User profile
  */
 export const signUpWithEmail = async (email, password, extraData = {}) => {
@@ -161,11 +198,24 @@ export const signUpWithEmail = async (email, password, extraData = {}) => {
     throw new Error('Password must be at least 6 characters long.');
   }
 
+  const namePart = cleanEmail.split('@')[0];
+  const capitalized = namePart.charAt(0).toUpperCase() + namePart.slice(1);
+  const firstName = extraData.firstName?.trim() || capitalized;
+  const lastName = extraData.lastName?.trim() || 'User';
+  const verificationCode = (extraData.verificationCode || '').toString().trim();
+
+  if (!verificationCode || !/^\d{6}$/.test(verificationCode)) {
+    throw new Error('Please enter the 6-digit verification code sent to your email.');
+  }
+
   if (!USE_MOCK) {
     try {
       const response = await apiPost('/auth/register', {
         email: cleanEmail,
         password,
+        firstName,
+        lastName,
+        verificationCode,
       });
 
       const data = response?.data || response;
@@ -176,32 +226,29 @@ export const signUpWithEmail = async (email, password, extraData = {}) => {
         throw new Error('Registration completed but no authentication token was returned.');
       }
 
-      const user = mapBackendUser(rawUser, extraData);
+      const user = mapBackendUser(rawUser, { firstName, lastName, ...extraData });
 
       localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
       localStorage.setItem(TOKEN_STORAGE_KEY, token);
       return user;
     } catch (err) {
       console.error('Registration API error:', err);
-      throw err;
+      throw new Error(
+        err.response?.data?.message ||
+        err.message ||
+        'Registration failed. Please check your details and verification code.'
+      );
     }
   }
 
   await simulateDelay(400, 700);
 
-  const namePart = cleanEmail.split('@')[0];
-  const capitalized = namePart.charAt(0).toUpperCase() + namePart.slice(1);
-
-  const fullName =
-    extraData.firstName && extraData.lastName
-      ? `${extraData.firstName.trim()} ${extraData.lastName.trim()}`
-      : extraData.name || (extraData.firstName ? extraData.firstName.trim() : capitalized);
-
+  const fullName = `${firstName} ${lastName}`.trim();
   const user = {
     id: `usr_e_${Date.now()}`,
     name: fullName,
-    firstName: extraData.firstName ? extraData.firstName.trim() : capitalized,
-    lastName: extraData.lastName ? extraData.lastName.trim() : '',
+    firstName,
+    lastName,
     email: cleanEmail,
     provider: 'email',
     role: 'user',
@@ -395,6 +442,85 @@ export const resetPassword = async ({ token, newPassword }) => {
     success: true,
     message: 'Password has been reset successfully. Please sign in.',
   };
+};
+
+/**
+ * Validate password reset token
+ * Backend: GET /auth/reset-password/:token/validate
+ *
+ * @param {string} token
+ * @returns {Promise<{ valid: boolean }>}
+ */
+export const validateResetToken = async (token) => {
+  if (!token) return { valid: false };
+
+  if (!USE_MOCK) {
+    try {
+      const res = await apiGet(`/auth/reset-password/${encodeURIComponent(token)}/validate`);
+      const valid = Boolean(res?.data?.valid ?? res?.valid ?? true);
+      return { valid };
+    } catch (err) {
+      console.warn('Validate reset token notice:', err);
+      return { valid: false };
+    }
+  }
+
+  await simulateDelay(200, 400);
+  return { valid: true };
+};
+
+/**
+ * Exchange Google OAuth exchange code for JWT and user profile
+ * Backend: POST /auth/google/exchange
+ *
+ * @param {string} code - Temporary single-use exchange code from Google redirect
+ * @returns {Promise<object>} Authenticated user profile
+ */
+export const exchangeGoogleCode = async (code) => {
+  if (!code) {
+    throw new Error('No exchange code provided from Google.');
+  }
+
+  if (!USE_MOCK) {
+    try {
+      const res = await apiPost('/auth/google/exchange', { code });
+      const data = res?.data || res;
+      const token = data?.token;
+      const rawUser = data?.user;
+
+      if (!token || !rawUser) {
+        throw new Error('Google authentication completed but no token was returned.');
+      }
+
+      const user = mapBackendUser(rawUser);
+      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
+      localStorage.setItem(TOKEN_STORAGE_KEY, token);
+      return user;
+    } catch (err) {
+      console.error('Google exchange error:', err);
+      throw new Error(
+        err.response?.data?.message ||
+        err.message ||
+        'Failed to authenticate with Google. The code may have expired.'
+      );
+    }
+  }
+
+  await simulateDelay(300, 600);
+  const user = {
+    id: `usr_g_${Date.now()}`,
+    name: 'Google User',
+    firstName: 'Google',
+    lastName: 'User',
+    email: 'google.user@example.com',
+    provider: 'google',
+    role: 'user',
+    createdAt: new Date().toISOString(),
+  };
+  const token = `bt_tok_g_${Date.now()}`;
+  localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
+  localStorage.setItem(TOKEN_STORAGE_KEY, token);
+  return user;
 };
 
 

@@ -282,6 +282,20 @@
   line-height: 1;
 }
 
+.home-category-card__icon-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 2.25rem;
+  width: 2.25rem;
+}
+
+.home-category-card__icon-img {
+  width: 2.25rem;
+  height: 2.25rem;
+  object-fit: contain;
+}
+
 .home-category-card__label {
   font-size: var(--text-sm);
   font-weight: var(--font-semibold);
