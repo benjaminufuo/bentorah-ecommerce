@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { addToCart, selectIsInCart } from '../../../redux/cartSlice';
+import { addItem as addToCart, selectIsInCart } from '../../../redux/cartSlice';
 import { useToast } from '../../ui/Toast/ToastContext';
 import { formatCurrency } from '../../../utils/formatters';
 import './ProductCard.css';

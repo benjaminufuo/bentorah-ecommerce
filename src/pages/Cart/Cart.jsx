@@ -3,9 +3,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   selectCartItems,
   selectCartSubtotal,
-  removeFromCart,
-  updateQuantity,
-  clearCart,
+  removeItem as removeFromCart,
+  updateItem as updateQuantity,
+  emptyCart as clearCart,
 } from '../../redux/cartSlice';
 import { formatCurrency } from '../../utils/formatters';
 import './Cart.css';
@@ -73,9 +73,9 @@ const Cart = () => {
                         className="cart-item__qty-btn"
                         onClick={() => {
                           if (item.quantity <= 1) {
-                            dispatch(removeFromCart({ id: item.id, variantKey: item.variantKey }));
+                            dispatch(removeFromCart({ id: item.id, variantKey: item.variantKey, itemId: item.itemId }));
                           } else {
-                            dispatch(updateQuantity({ id: item.id, variantKey: item.variantKey, quantity: item.quantity - 1 }));
+                            dispatch(updateQuantity({ id: item.id, variantKey: item.variantKey, quantity: item.quantity - 1, itemId: item.itemId }));
                           }
                         }}
                         aria-label="Decrease quantity"
@@ -85,7 +85,7 @@ const Cart = () => {
                       <span className="cart-item__qty-val">{item.quantity}</span>
                       <button
                         className="cart-item__qty-btn"
-                        onClick={() => dispatch(updateQuantity({ id: item.id, variantKey: item.variantKey, quantity: item.quantity + 1 }))}
+                        onClick={() => dispatch(updateQuantity({ id: item.id, variantKey: item.variantKey, quantity: item.quantity + 1, itemId: item.itemId }))}
                         aria-label="Increase quantity"
                       >
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -96,7 +96,7 @@ const Cart = () => {
 
                     <button
                       className="cart-item__remove"
-                      onClick={() => dispatch(removeFromCart({ id: item.id, variantKey: item.variantKey }))}
+                      onClick={() => dispatch(removeFromCart({ id: item.id, variantKey: item.variantKey, itemId: item.itemId }))}
                       aria-label={`Remove ${item.name} from cart`}
                     >
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

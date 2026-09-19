@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { authStart, authSuccess, authFailure } from '../../redux/authSlice';
+import { mergeGuestCartOnLogin } from '../../redux/cartSlice';
 import { fetchCurrentUser, exchangeGoogleCode } from '../../services/authService';
 import { useToast } from '../../components/ui/Toast/ToastContext';
 import './AuthCallback.css';
@@ -77,6 +78,7 @@ const AuthCallback = () => {
 
         if (user) {
           dispatch(authSuccess(user));
+          dispatch(mergeGuestCartOnLogin());
           setState('success');
           toast.success(`Welcome, ${user.firstName || user.name || 'Shopper'}!`);
 

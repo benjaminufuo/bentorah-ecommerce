@@ -1,6 +1,6 @@
 import { useSelector, useDispatch } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
-import { selectCartItems, selectCartSubtotal, removeFromCart } from '../../../redux/cartSlice';
+import { selectCartItems, selectCartSubtotal, removeItem as removeFromCart } from '../../../redux/cartSlice';
 import { formatCurrency } from '../../../utils/formatters';
 import { useState, useEffect } from 'react';
 import './CartDrawer.css';
@@ -120,7 +120,7 @@ const CartDrawer = () => {
                     <p className="cart-drawer__item-subtotal">{formatCurrency(item.subtotal)}</p>
                     <button
                       className="cart-drawer__item-remove"
-                      onClick={() => dispatch(removeFromCart({ id: item.id, variantKey: item.variantKey }))}
+                      onClick={() => dispatch(removeFromCart({ id: item.id, variantKey: item.variantKey, itemId: item.itemId }))}
                       aria-label={`Remove ${item.name} from cart`}
                     >
                       <TrashIcon />

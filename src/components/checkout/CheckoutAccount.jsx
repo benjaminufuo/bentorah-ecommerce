@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { authStart, authSuccess, authFailure } from '../../redux/authSlice';
+import { mergeGuestCartOnLogin } from '../../redux/cartSlice';
 import {
   signInWithEmail,
   signUpWithEmail,
@@ -136,6 +137,7 @@ const CheckoutAccount = ({ onAuthSuccess }) => {
         user = await signInWithEmail(email, password);
       }
       dispatch(authSuccess(user));
+      dispatch(mergeGuestCartOnLogin());
       toast.success(
         mode === 'signup'
           ? `Welcome to Bentorah, ${user.firstName || user.name || 'Shopper'}!`

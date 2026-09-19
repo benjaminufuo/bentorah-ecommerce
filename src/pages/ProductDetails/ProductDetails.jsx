@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { getProductById, getRelatedProducts } from '../../services/productService';
-import { addToCart, updateQuantity, selectIsInCart } from '../../redux/cartSlice';
+import { addItem as addToCart, updateQuantity, selectIsInCart } from '../../redux/cartSlice';
 import { useToast } from '../../components/ui/Toast/ToastContext';
 import ProductCard from '../../components/products/ProductCard/ProductCard';
 import { formatCurrency } from '../../utils/formatters';

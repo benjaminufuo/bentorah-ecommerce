@@ -17,6 +17,7 @@
 import { apiGet, apiPost, simulateDelay, USE_MOCK } from './api';
 import { generateOrderId } from '../utils/formatters';
 import { getCurrentUser } from './authService';
+import { mergeServerCart } from './cartService';
 
 const ORDERS_STORAGE_KEY = 'bentorah_orders';
 
@@ -203,17 +204,7 @@ export const createOrder = async (orderData) => {
       // 1. Sync client cart items to server cart before placing order
       if (Array.isArray(orderData.items) && orderData.items.length > 0) {
         try {
-          const mergePayload = {
-            items: orderData.items.map((item) => ({
-              productId: item.productId || item.id,
-              quantity: item.quantity || 1,
-              color: {
-                label: item.variant || 'Standard',
-                hexCode: '#1a1a1a',
-              },
-            })),
-          };
-          await apiPost('/cart/merge', mergePayload);
+          await mergeServerCart(orderData.items);
         } catch (mergeErr) {
           console.warn('Cart merge prior to order notice:', mergeErr);
         }

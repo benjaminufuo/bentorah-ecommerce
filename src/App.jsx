@@ -1,6 +1,8 @@
+import { useEffect } from 'react';
 import { createBrowserRouter, RouterProvider, Outlet, ScrollRestoration } from 'react-router-dom';
-import { Provider } from 'react-redux';
+import { Provider, useDispatch } from 'react-redux';
 import { store } from './redux/store';
+import { loadCart } from './redux/cartSlice';
 import { ToastProvider } from './components/ui/Toast/ToastContext';
 import Navbar from './components/layout/Navbar/Navbar';
 import Footer from './components/layout/Footer/Footer';
@@ -22,6 +24,12 @@ import NotFound from './pages/NotFound/NotFound';
 import ProtectedRoute from './components/auth/ProtectedRoute/ProtectedRoute';
 
 function AppLayout() {
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(loadCart());
+  }, [dispatch]);
+
   return (
     <div className="bentorah-page">
       {/* <a href="#main-content" className="skip-link">Skip to main content</a> */}

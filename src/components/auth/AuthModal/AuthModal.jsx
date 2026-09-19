@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { authStart, authSuccess, authFailure } from '../../../redux/authSlice';
+import { mergeGuestCartOnLogin } from '../../../redux/cartSlice';
 import {
   signInWithGoogle,
   signInWithEmail,
@@ -236,6 +237,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'signin' }) => {
       }
 
       dispatch(authSuccess(user));
+      dispatch(mergeGuestCartOnLogin());
       onClose();
     } catch (err) {
       const msg = err.message || 'Authentication failed. Please check your credentials.';
