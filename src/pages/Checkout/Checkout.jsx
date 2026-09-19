@@ -34,25 +34,43 @@ const CheckoutField = ({
   required,
   placeholder,
   autoComplete,
+  readOnly = false,
+  hint,
 }) => (
   <div className="checkout-field">
-    <label className="checkout-field__label" htmlFor={id}>
-      {label}
-      {required && <span aria-hidden="true"> *</span>}
-    </label>
+    <div className="checkout-field__label-row">
+      <label className="checkout-field__label" htmlFor={id}>
+        {label}
+        {required && <span aria-hidden="true"> *</span>}
+      </label>
+      {readOnly && (
+        <span className="checkout-field__locked-badge" title="Linked to your account">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+          Account Info
+        </span>
+      )}
+    </div>
     <input
       id={id}
       name={name}
       type={type}
-      className={`checkout-field__input ${error ? 'checkout-field__input--error' : ''}`}
+      className={`checkout-field__input ${error ? 'checkout-field__input--error' : ''} ${
+        readOnly ? 'checkout-field__input--readonly' : ''
+      }`}
       value={value ?? ''}
-      onChange={onChange}
+      onChange={readOnly ? undefined : onChange}
       placeholder={placeholder}
       autoComplete={autoComplete}
       aria-invalid={Boolean(error)}
       aria-describedby={error ? `${id}-error` : undefined}
       required={required}
+      readOnly={readOnly}
+      tabIndex={readOnly ? -1 : undefined}
     />
+    {hint && <p className="checkout-field__hint">{hint}</p>}
     {error && (
       <p className="checkout-field__error" id={`${id}-error`} role="alert">
         {error}
@@ -130,14 +148,19 @@ const Checkout = () => {
   useEffect(() => {
     if (currentUser) {
       const parts = (currentUser.name || '').trim().split(' ');
-      const firstName = currentUser.firstName || parts[0] || '';
-      const lastName = currentUser.lastName || (parts.length > 1 ? parts.slice(1).join(' ') : '');
+      const firstName =
+        currentUser.firstName ||
+        parts[0] ||
+        (currentUser.email ? currentUser.email.split('@')[0] : 'Shopper');
+      const lastName =
+        currentUser.lastName ||
+        (parts.length > 1 ? parts.slice(1).join(' ') : 'Customer');
 
       setForm((prev) => ({
         ...prev,
         email: currentUser.email || prev.email,
-        firstName: prev.firstName || firstName,
-        lastName: prev.lastName || lastName,
+        firstName: firstName || prev.firstName || 'Shopper',
+        lastName: lastName || prev.lastName || 'Customer',
       }));
     }
   }, [currentUser]);
@@ -264,16 +287,23 @@ const Checkout = () => {
 
                 {/* Contact Information */}
                 <div className="checkout-form__section">
-                  <h2 className="checkout-form__heading">Contact Information</h2>
+                  <div className="checkout-section-header-flex">
+                    <h2 className="checkout-form__heading">Contact Information</h2>
+                    <span className="checkout-readonly-note">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                      </svg>
+                      Name &amp; email linked to your account
+                    </span>
+                  </div>
                   <div className="checkout-form__grid-2">
                     <CheckoutField
                       label="First Name"
                       id="firstName"
                       name="firstName"
                       value={form.firstName}
-                      onChange={handleChange}
-                      error={errors.firstName}
-                      required
+                      readOnly
                       placeholder="Alex"
                       autoComplete="given-name"
                     />
@@ -282,9 +312,7 @@ const Checkout = () => {
                       id="lastName"
                       name="lastName"
                       value={form.lastName}
-                      onChange={handleChange}
-                      error={errors.lastName}
-                      required
+                      readOnly
                       placeholder="Johnson"
                       autoComplete="family-name"
                     />
@@ -295,9 +323,7 @@ const Checkout = () => {
                     name="email"
                     type="email"
                     value={form.email}
-                    onChange={handleChange}
-                    error={errors.email}
-                    required
+                    readOnly
                     placeholder="alex.johnson@example.com"
                     autoComplete="email"
                   />
@@ -312,6 +338,7 @@ const Checkout = () => {
                     required
                     placeholder="0801 234 5678"
                     autoComplete="tel"
+                    hint="Enter the phone number where our delivery rider can reach you."
                   />
                 </div>
 
