@@ -210,18 +210,15 @@ export const createOrder = async (orderData) => {
         }
       }
 
-      // 2. Format customer names
-      const nameParts = (orderData.customer?.name || '').trim().split(' ');
-      const firstName = orderData.customer?.firstName || nameParts[0] || 'Customer';
-      const lastName =
-        orderData.customer?.lastName || nameParts.slice(1).join(' ') || 'BENTORAH';
+      // 2. Customer delivery contact and address (backend strictly takes only phoneNumber in customer)
+      const phoneNumber =
+        orderData.customer?.phone ||
+        orderData.customer?.phoneNumber ||
+        '08012345678';
 
       const orderPayload = {
         customer: {
-          firstName,
-          lastName,
-          phoneNumber:
-            orderData.customer?.phone || orderData.customer?.phoneNumber || '08012345678',
+          phoneNumber: phoneNumber.trim(),
         },
         deliveryAddress: {
           street:
@@ -267,7 +264,12 @@ export const createOrder = async (orderData) => {
       return mapped;
     } catch (err) {
       console.error('Backend /orders failed:', err);
+      const validationError =
+        Array.isArray(err.response?.data?.errors) && err.response.data.errors.length > 0
+          ? err.response.data.errors.map((e) => e.message || `${e.field}: invalid`).join(', ')
+          : null;
       throw new Error(
+        validationError ||
         err.response?.data?.message ||
         err.message ||
         'Failed to create order on server. Please try again.'

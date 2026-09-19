@@ -66,7 +66,12 @@ export const initializePayment = async (data) => {
       };
     } catch (err) {
       console.error('Backend payment initialize error:', err);
+      const validationError =
+        Array.isArray(err.response?.data?.errors) && err.response.data.errors.length > 0
+          ? err.response.data.errors.map((e) => e.message || `${e.field}: invalid`).join(', ')
+          : null;
       throw new Error(
+        validationError ||
         err.response?.data?.message ||
         err.message ||
         'Failed to initialize payment gateway with backend.'
