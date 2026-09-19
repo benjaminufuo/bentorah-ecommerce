@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { authStart, authSuccess, authFailure } from '../../redux/authSlice';
@@ -31,6 +31,9 @@ const AuthCallback = () => {
   const [state, setState] = useState('processing'); // 'processing' | 'success' | 'failed'
   const [errorMessage, setErrorMessage] = useState('');
 
+  // Strict guard: ensure authentication exchange only executes once
+  const hasProcessedRef = useRef(false);
+
   // Extract exchange code, token, or error from query parameters
   const code = searchParams.get('code');
   const token =
@@ -57,6 +60,9 @@ const AuthCallback = () => {
       return;
     }
 
+    if (hasProcessedRef.current) return;
+    hasProcessedRef.current = true;
+
     let isMounted = true;
 
     const processAuth = async () => {
@@ -82,17 +88,20 @@ const AuthCallback = () => {
           setState('success');
           toast.success(`Welcome, ${user.firstName || user.name || 'Shopper'}!`);
 
-          // Automatically navigate to intended page after 800ms
+          // Automatically navigate to intended page after 600ms
           setTimeout(() => {
             if (isMounted) navigate(redirectTarget, { replace: true });
-          }, 800);
+          }, 600);
         } else {
           throw new Error('Unable to retrieve user account profile.');
         }
       } catch (err) {
         if (!isMounted) return;
         setState('failed');
-        const msg = err.message || 'Authentication with Google failed. Please try again.';
+        let msg = err.message || 'Authentication with Google failed. Please try again.';
+        if (msg.includes('Too many attempts') || msg.includes('429')) {
+          msg = 'Too many attempts made recently. Please wait a few minutes before trying again.';
+        }
         setErrorMessage(msg);
         dispatch(authFailure(msg));
       }
@@ -103,7 +112,7 @@ const AuthCallback = () => {
     return () => {
       isMounted = false;
     };
-  }, [token, errorParam, redirectTarget, dispatch, navigate, toast]);
+  }, []); // Run once on mount
 
   return (
     <div className="auth-callback-page">

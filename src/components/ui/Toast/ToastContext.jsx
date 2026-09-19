@@ -22,11 +22,14 @@ export const ToastProvider = ({ children }) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
-  const toast = {
-    success: (msg, dur) => addToast(msg, 'success', dur),
-    error: (msg, dur) => addToast(msg, 'error', dur),
-    info: (msg, dur) => addToast(msg, 'info', dur),
-  };
+  const toast = useMemo(
+    () => ({
+      success: (msg, dur) => addToast(msg, 'success', dur),
+      error: (msg, dur) => addToast(msg, 'error', dur),
+      info: (msg, dur) => addToast(msg, 'info', dur),
+    }),
+    [addToast]
+  );
 
   return (
     <ToastContext.Provider value={toast}>
