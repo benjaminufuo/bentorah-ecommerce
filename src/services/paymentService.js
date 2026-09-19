@@ -98,6 +98,22 @@ export const initializePayment = async (data) => {
 };
 
 /**
+ * Helper: Check whether a status string signifies a successful payment
+ * @param {string} status
+ * @returns {boolean}
+ */
+export const isPaymentSuccessful = (status) => {
+  if (!status || typeof status !== 'string') return false;
+  const s = status.trim().toLowerCase();
+  return (
+    s === 'successful' ||
+    s === 'success' ||
+    s === 'completed' ||
+    s === 'paid'
+  );
+};
+
+/**
  * Verify a completed payment transaction
  * Backend: GET /payments/verify/:reference
  *
@@ -110,15 +126,34 @@ export const verifyPayment = async (reference, method) => {
     try {
       const res = await apiGet(`/payments/verify/${encodeURIComponent(reference)}`);
       const verification = res?.data || res;
+      const status = (verification?.status || '').toString().toLowerCase();
+      const isSuccess = isPaymentSuccessful(status);
+
       return {
-        verified: verification.status === 'success' || verification.status === 'completed',
-        reference,
-        method,
-        status: verification.status || 'success',
+        verified: isSuccess,
+        reference: verification?.reference || reference,
+        method: verification?.gateway || method,
+        status: verification?.status || (isSuccess ? 'successful' : 'failed'),
+        amount: verification?.amount,
+        orderId: verification?.orderId,
         details: verification,
       };
     } catch (err) {
       console.warn('Backend payment verification notice:', err);
+      const data = err.response?.data?.data || err.response?.data;
+      if (data && data.status) {
+        const isSuccess = isPaymentSuccessful(data.status);
+        return {
+          verified: isSuccess,
+          reference,
+          method,
+          status: data.status,
+          amount: data.amount,
+          orderId: data.orderId,
+          details: data,
+        };
+      }
+      throw err;
     }
   }
 
@@ -128,7 +163,7 @@ export const verifyPayment = async (reference, method) => {
     verified: true,
     reference,
     method,
-    status: 'success',
+    status: 'successful',
   };
 };
 

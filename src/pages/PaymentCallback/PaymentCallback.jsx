@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { clearCart } from '../../redux/cartSlice';
-import { verifyPayment } from '../../services/paymentService';
+import { verifyPayment, isPaymentSuccessful } from '../../services/paymentService';
 import { getOrderById } from '../../services/orderService';
 import { formatCurrency } from '../../utils/formatters';
 import './PaymentCallback.css';
@@ -32,6 +32,8 @@ const PaymentCallback = () => {
   const [verifiedData, setVerifiedData] = useState(null);
   const [order, setOrder] = useState(null);
 
+  const hasVerifiedRef = useRef(false);
+
   // Extract reference from possible gateway query parameter variants (Paystack & Flutterwave)
   const reference =
     searchParams.get('reference') ||
@@ -39,6 +41,8 @@ const PaymentCallback = () => {
     searchParams.get('tx_ref') ||
     searchParams.get('transaction_id') ||
     searchParams.get('flw_ref');
+
+  const queryStatus = searchParams.get('status');
 
   useEffect(() => {
     document.title = 'Verifying Payment — BENTORAH';
@@ -48,15 +52,34 @@ const PaymentCallback = () => {
       return;
     }
 
+    if (hasVerifiedRef.current) return;
+    hasVerifiedRef.current = true;
+
     let isMounted = true;
 
     const runVerification = async () => {
       try {
-        const result = await verifyPayment(reference);
+        let result = await verifyPayment(reference);
 
         if (!isMounted) return;
 
-        if (result && (result.verified || result.status === 'success' || result.status === 'completed')) {
+        // If gateway returned pending, poll up to 2 times
+        if (result && result.status === 'pending') {
+          for (let attempt = 0; attempt < 2; attempt++) {
+            await new Promise((r) => setTimeout(r, 1500));
+            if (!isMounted) return;
+            result = await verifyPayment(reference);
+            if (result?.verified || isPaymentSuccessful(result?.status)) break;
+          }
+        }
+
+        const isSuccess =
+          result?.verified ||
+          isPaymentSuccessful(result?.status) ||
+          isPaymentSuccessful(result?.details?.status) ||
+          (isPaymentSuccessful(queryStatus) && result?.status !== 'failed');
+
+        if (result && isSuccess) {
           setVerifiedData(result);
           dispatch(clearCart());
           setState('success');
@@ -68,17 +91,17 @@ const PaymentCallback = () => {
             if (rawPending) pendingOrder = JSON.parse(rawPending);
           } catch (e) {}
 
-          // Attempt to find associated order if backend returned orderId
-          const orderId =
+          // Attempt to find associated order
+          const orderIdentifier =
+            pendingOrder?.orderNumber ||
             result.details?.orderId ||
             result.orderId ||
-            pendingOrder?.orderNumber ||
             pendingOrder?._id ||
             pendingOrder?.id;
 
-          if (orderId) {
+          if (orderIdentifier) {
             try {
-              const fetchedOrder = await getOrderById(orderId);
+              const fetchedOrder = await getOrderById(orderIdentifier);
               if (isMounted) setOrder(fetchedOrder || pendingOrder);
             } catch (orderErr) {
               console.warn('Order lookup following payment verification:', orderErr);
@@ -113,7 +136,7 @@ const PaymentCallback = () => {
     return () => {
       isMounted = false;
     };
-  }, [reference, dispatch]);
+  }, [reference, queryStatus, dispatch]);
 
   return (
     <div className="payment-callback-page">
